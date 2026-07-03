@@ -43,7 +43,7 @@ src/
 
 ---
 
-## 💡 How It Works
+## How It Works
 
 - If input contains `.` or `-` → treated as Morse code
 - Otherwise → treated as normal text
@@ -51,12 +51,12 @@ src/
 
 ---
 
-## 📸 Preview
+## Preview
 <img width="1521" height="777" alt="image" src="https://github.com/user-attachments/assets/f4910281-dceb-4765-ae39-a05c9e57a5b0" />
 
 ---
 
-## 📌 Future Improvements
+## Future Improvements
 
 - Dark theme toggle
 - Voice input (speech-to-text)
@@ -65,7 +65,7 @@ src/
 
 ---
 
-## 👩‍💻 Author
+## Author
 
-Built by **Felicia**  
-Frontend + UI/UX practice project
+Built by **Felicia Rizka Putri**  
+Web Building

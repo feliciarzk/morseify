@@ -52,8 +52,7 @@ src/
 ---
 
 ## 📸 Preview
-
-
+<img width="1521" height="777" alt="image" src="https://github.com/user-attachments/assets/f4910281-dceb-4765-ae39-a05c9e57a5b0" />
 
 ---
 

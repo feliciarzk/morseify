@@ -1,4 +1,4 @@
-import { MORSE_MAP } from "./morseMap";
+import { MORSE_MAP } from "./MorseMap";
 
 // REVERSE MAP (Morse -> Text)
 const REVERSE_MAP = Object.fromEntries(

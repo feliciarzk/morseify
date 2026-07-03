@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { detectAndTranslate } from "../../utils/translator.js";
+import { detectAndTranslate } from "../../utils/Translator.js";
 
 export default function TranslatorCard() {
   const [input, setInput] = useState("");

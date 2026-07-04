@@ -31,6 +31,7 @@ https://morseify.vercel.app](https://morseify-chif-theta.vercel.app/)
 ---
 
 ## 📁 Project Structure
+```
 src/
 ├── components/
 │ ├── translator/
@@ -39,7 +40,7 @@ src/
 │ ├── Translator.js
 │ ├── MorseMap.js
 │ ├── audio.js
-
+```
 
 ---
 

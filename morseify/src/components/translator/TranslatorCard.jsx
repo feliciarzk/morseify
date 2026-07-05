@@ -1,21 +1,13 @@
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-=======
 import { useState, useEffect } from "react";
->>>>>>> 50d211f (make a realtime)
 import { motion } from "framer-motion";
 import { detectAndTranslate } from "../../utils/Translator";
 
 export default function TranslatorCard() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [flashMode, setFlashMode] = useState(false);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (!input.trim()) {
-      setOutput("");
-      return;
-=======
   // ===== REALTIME TRANSLATE (DEBOUNCE) =====
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -26,79 +18,11 @@ export default function TranslatorCard() {
 
       const { result } = detectAndTranslate(input);
       setOutput(result);
-    }, 300); // debounce biar gak spam CPU
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [input]);
 
-  // ===== AUDIO MORSE =====
-  const playMorse = async (morse) => {
-    if (!morse) return;
-
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    const beep = (duration, freq = 700) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.value = 0.1;
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      setTimeout(() => osc.stop(), duration);
-    };
-
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-    const unit = 150;
-
-    for (let i = 0; i < morse.length; i++) {
-      const s = morse[i];
-
-      if (s === ".") {
-        beep(unit);
-        await sleep(unit);
-        await flash(unit);
-      }
-
-      if (s === "-") {
-        beep(unit * 3);
-        await sleep(unit * 3);
-        await flash(unit * 3);
-      }
-
-      if (s === " ") await sleep(unit * 2);
-      if (s === "/") await sleep(unit * 6);
-
-      await sleep(unit);
->>>>>>> 50d211f (make a realtime)
-    }
-
-<<<<<<< HEAD
-    const { result } = detectAndTranslate(input);
-    setOutput(result);
-  }, [input]);
-
-  const handleCopy = () => {
-    if (output) navigator.clipboard.writeText(output);
-  };
-
-  const handleCopy = () => navigator.clipboard.writeText(output);
-
-  const handlePlay = async () => {
-    setLoading(true);
-    await playMorse(output);
-    setLoading(false);
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(output);
-  };
-=======
   // ===== FLASH =====
   const flash = async (time) => {
     if (!flashMode) return;
@@ -125,8 +49,59 @@ export default function TranslatorCard() {
     }
   };
 
-  const handleCopy = () => navigator.clipboard.writeText(output);
->>>>>>> 50d211f (make a realtime)
+  // ===== AUDIO MORSE =====
+  const playMorse = async (morse) => {
+    if (!morse) return;
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const beep = (duration, freq = 700) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.value = 0.1;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      setTimeout(() => osc.stop(), duration);
+    };
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const unit = 150;
+
+    for (let i = 0; i < morse.length; i++) {
+      const s = morse[i];
+
+      if (s === ".") {
+        beep(unit);
+        await flash(unit);
+        await sleep(unit);
+      }
+
+      if (s === "-") {
+        beep(unit * 3);
+        await flash(unit * 3);
+        await sleep(unit * 3);
+      }
+
+      if (s === " ") await sleep(unit * 2);
+      if (s === "/") await sleep(unit * 6);
+
+      await sleep(unit);
+    }
+  };
+
+  // ===== ACTIONS =====
+  const handleCopy = () => navigator.clipboard.writeText(output || "");
+
+  const handleClear = () => {
+    setInput("");
+    setOutput("");
+  };
 
   const handlePlay = async () => {
     setLoading(true);
@@ -140,13 +115,8 @@ export default function TranslatorCard() {
       animate={{ opacity: 1, y: 0 }}
       className="mt-16 w-full max-w-3xl mx-auto bg-[#18181B] border border-gray-800 rounded-2xl p-6 shadow-lg"
     >
-<<<<<<< HEAD
       <h2 className="text-xl font-semibold text-white mb-4">
-        Morse Translator
-=======
-      <h2 className="text-xl font-semibold mb-4">
         Morse Translator (Realtime)
->>>>>>> 50d211f (make a realtime)
       </h2>
 
       {/* INPUT */}
@@ -157,34 +127,16 @@ export default function TranslatorCard() {
         className="w-full h-28 p-4 rounded-xl bg-[#09090B] border border-gray-800 text-white outline-none resize-none"
       />
 
-<<<<<<< HEAD
-      <div className="mt-4 text-gray-400 text-sm mb-2">
-        Output
-      </div>
-
-      <div className="w-full min-h-[100px] p-4 rounded-xl bg-[#0A0A0A] border border-gray-800 text-gray-300 whitespace-pre-wrap">
-        {output ? (
-          output
-        ) : (
-          <span className="text-gray-600 italic">
-            Start typing to see translation...
-          </span>
-        )}
-      </div>
-
-      <div className="flex gap-3 mt-5">
-=======
       {/* OUTPUT */}
       <div className="mt-4">
         <div className="text-sm text-gray-400 mb-2">Output</div>
-        <div className="w-full min-h-[100px] p-4 rounded-xl bg-[#09090B] border border-gray-800 text-gray-300">
+        <div className="w-full min-h-[100px] p-4 rounded-xl bg-[#09090B] border border-gray-800 text-gray-300 whitespace-pre-wrap">
           {output || "Translation will appear in realtime..."}
         </div>
       </div>
 
       {/* CONTROLS */}
       <div className="flex flex-wrap gap-3 mt-5">
->>>>>>> 50d211f (make a realtime)
         <button
           onClick={handleCopy}
           className="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
@@ -193,14 +145,7 @@ export default function TranslatorCard() {
         </button>
 
         <button
-<<<<<<< HEAD
           onClick={handleClear}
-          className="px-4 py-2 rounded-lg bg-gray-800 text-white"
-        >
-          Clear
-        </button>
-=======
-          onClick={() => setInput("")}
           className="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
         >
           Clear
@@ -213,18 +158,14 @@ export default function TranslatorCard() {
           {loading ? "Playing..." : "Play"}
         </button>
 
-        {/* FLASH MODE */}
         <button
           onClick={() => setFlashMode(!flashMode)}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
-            flashMode
-              ? "bg-yellow-400 text-black"
-              : "bg-gray-800 text-white"
+            flashMode ? "bg-yellow-400 text-black" : "bg-gray-800 text-white"
           }`}
         >
           Flash: {flashMode ? "ON" : "OFF"}
         </button>
->>>>>>> 50d211f (make a realtime)
       </div>
     </motion.div>
   );

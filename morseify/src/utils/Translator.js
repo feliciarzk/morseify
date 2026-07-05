@@ -1,11 +1,9 @@
 import { MORSE_MAP } from "./MorseMap";
 
-// REVERSE MAP (Morse -> Text)
 const REVERSE_MAP = Object.fromEntries(
   Object.entries(MORSE_MAP).map(([key, value]) => [value, key])
 );
 
-// TEXT -> MORSE
 export function textToMorse(text) {
   return text
     .toUpperCase()
@@ -15,7 +13,6 @@ export function textToMorse(text) {
     .trim();
 }
 
-// MORSE -> TEXT
 export function morseToText(morse) {
   return morse
     .split(" ")
@@ -24,7 +21,6 @@ export function morseToText(morse) {
     .trim();
 }
 
-// AUTO DETECT
 export function detectAndTranslate(input) {
   const isMorse = /^[.\-\/\s]+$/.test(input.trim());
 

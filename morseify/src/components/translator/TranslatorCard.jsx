@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { detectAndTranslate } from "../../utils/Translator";
 
@@ -8,7 +8,13 @@ export default function TranslatorCard() {
   const [loading, setLoading] = useState(false);
   const [flashMode, setFlashMode] = useState(false);
 
-  // ===== REALTIME TRANSLATE (DEBOUNCE) =====
+  const audioCtx = useRef(null);
+  const streamRef = useRef(null);
+  const trackRef = useRef(null);
+
+  // ======================
+  // REALTIME TRANSLATE
+  // ======================
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!input.trim()) {
@@ -18,85 +24,121 @@ export default function TranslatorCard() {
 
       const { result } = detectAndTranslate(input);
       setOutput(result);
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timeout);
   }, [input]);
 
-  // ===== FLASH =====
-  const flash = async (time) => {
-    if (!flashMode) return;
+  // ======================
+  // AUDIO INIT
+  // ======================
+  const getAudioContext = async () => {
+    if (!audioCtx.current) {
+      audioCtx.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
+    }
+
+    if (audioCtx.current.state === "suspended") {
+      await audioCtx.current.resume();
+    }
+
+    return audioCtx.current;
+  };
+
+  // ======================
+  // FLASH INIT
+  // ======================
+  const initFlash = async () => {
+    if (trackRef.current) return;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
 
-      const track = stream.getVideoTracks()[0];
-
-      if (track?.applyConstraints) {
-        await track.applyConstraints({
-          advanced: [{ torch: true }],
-        });
-      }
-
-      setTimeout(() => track.stop(), time);
+      streamRef.current = stream;
+      trackRef.current = stream.getVideoTracks()[0];
     } catch {
-      document.body.style.background = "white";
-      setTimeout(() => {
-        document.body.style.background = "#09090B";
-      }, time);
+      console.log("Torch not supported");
     }
   };
 
-  // ===== AUDIO MORSE =====
+  // ======================
+  // FLASH
+  // ======================
+  const flash = async (duration) => {
+    if (!flashMode) return;
+    if (!trackRef.current) return;
+
+    try {
+      await trackRef.current.applyConstraints({
+        advanced: [{ torch: true }],
+      });
+
+      await new Promise((r) => setTimeout(r, duration));
+
+      await trackRef.current.applyConstraints({
+        advanced: [{ torch: false }],
+      });
+    } catch {
+      document.body.style.filter = "brightness(2)";
+      await new Promise((r) => setTimeout(r, duration));
+      document.body.style.filter = "";
+    }
+  };
+
+  // ======================
+  // PLAY MORSE
+  // ======================
   const playMorse = async (morse) => {
     if (!morse) return;
 
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = await getAudioContext();
+    if (flashMode) await initFlash();
 
-    const beep = (duration, freq = 700) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.value = 0.1;
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      setTimeout(() => osc.stop(), duration);
-    };
-
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const unit = 150;
 
-    for (let i = 0; i < morse.length; i++) {
-      const s = morse[i];
+    for (const symbol of morse) {
+      if (symbol === "." || symbol === "-") {
+        const duration = symbol === "." ? unit : unit * 3;
 
-      if (s === ".") {
-        beep(unit);
-        await flash(unit);
-        await sleep(unit);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = 700;
+        gain.gain.value = 0.12;
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+
+        flash(duration);
+
+        await new Promise((r) => setTimeout(r, duration));
+        osc.stop();
+
+        await new Promise((r) => setTimeout(r, unit));
       }
 
-      if (s === "-") {
-        beep(unit * 3);
-        await flash(unit * 3);
-        await sleep(unit * 3);
-      }
+      if (symbol === " ") await new Promise((r) => setTimeout(r, unit * 2));
+      if (symbol === "/") await new Promise((r) => setTimeout(r, unit * 6));
+    }
 
-      if (s === " ") await sleep(unit * 2);
-      if (s === "/") await sleep(unit * 6);
-
-      await sleep(unit);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      trackRef.current = null;
     }
   };
 
-  // ===== ACTIONS =====
-  const handleCopy = () => navigator.clipboard.writeText(output || "");
+  // ======================
+  // ACTIONS
+  // ======================
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output || "");
+  };
 
   const handleClear = () => {
     setInput("");
@@ -119,7 +161,6 @@ export default function TranslatorCard() {
         Morse Translator (Realtime)
       </h2>
 
-      {/* INPUT */}
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -127,7 +168,6 @@ export default function TranslatorCard() {
         className="w-full h-28 p-4 rounded-xl bg-[#09090B] border border-gray-800 text-white outline-none resize-none"
       />
 
-      {/* OUTPUT */}
       <div className="mt-4">
         <div className="text-sm text-gray-400 mb-2">Output</div>
         <div className="w-full min-h-[100px] p-4 rounded-xl bg-[#09090B] border border-gray-800 text-gray-300 whitespace-pre-wrap">
@@ -135,36 +175,38 @@ export default function TranslatorCard() {
         </div>
       </div>
 
-      {/* CONTROLS */}
       <div className="flex flex-wrap gap-3 mt-5">
         <button
           onClick={handleCopy}
-          className="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+          className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white"
         >
           Copy
         </button>
 
         <button
           onClick={handleClear}
-          className="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+          className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white"
         >
           Clear
         </button>
 
         <button
           onClick={handlePlay}
-          className="px-4 py-2 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600"
+          disabled={loading}
+          className="px-4 py-2 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 disabled:opacity-50"
         >
           {loading ? "Playing..." : "Play"}
         </button>
 
         <button
           onClick={() => setFlashMode(!flashMode)}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            flashMode ? "bg-yellow-400 text-black" : "bg-gray-800 text-white"
+          className={`px-4 py-2 rounded-lg font-semibold ${
+            flashMode
+              ? "bg-yellow-400 text-black"
+              : "bg-gray-800 text-white"
           }`}
         >
-          Flash: {flashMode ? "ON" : "OFF"}
+          Flash {flashMode ? "ON" : "OFF"}
         </button>
       </div>
     </motion.div>

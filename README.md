@@ -6,7 +6,7 @@ It also supports **sound playback** and **flash light mode (mobile supported)** 
 ---
 
 ## Live Demo
-https://morseify.vercel.app](https://morseify-chif-theta.vercel.app/)
+https://morseify-chif-theta.vercel.app/
 
 ---
 
@@ -21,25 +21,42 @@ https://morseify.vercel.app](https://morseify-chif-theta.vercel.app/)
 
 ---
 
-## 🛠️ Tech Stack
+## PWA / Offline Support
+
+Morseify supports **Progressive Web App (PWA)** features.
+
+- Can be installed on mobile/desktop
+- Works offline after first full load
+- Requires initial visit to cache assets
+- Service Worker handles offline availability
+
+Note:
+After a new deployment, the app may need to be opened once again to update cache for offline mode.
+
+---
+
+## Tech Stack
 
 - React (Vite)
 - JavaScript (ES6+)
 - CSS
-- Web APIs (Audio + Clipboard + Flashlight)
+- Web APIs (Audio, Clipboard, MediaDevices Flashlight)
 
 ---
-
 ## 📁 Project Structure
+
 ```
 src/
 ├── components/
-│ ├── translator/
-│ ├── layout/
+│   └── translator/
+│       └── TranslatorCard.jsx
+│
 ├── utils/
-│ ├── Translator.js
-│ ├── MorseMap.js
-│ ├── audio.js
+│   ├── Translator.js
+│   └── MorseMap.js
+│
+├── App.jsx
+├── main.jsx
 ```
 
 ---
@@ -52,21 +69,12 @@ src/
 
 ---
 
-## Preview
+## 📸 Preview
+
 <img width="1521" height="777" alt="image" src="https://github.com/user-attachments/assets/f4910281-dceb-4765-ae39-a05c9e57a5b0" />
-
----
-
-## Future Improvements
-
-- Dark theme toggle
-- Voice input (speech-to-text)
-- PWA support (installable app)
-- History feature
 
 ---
 
 ## Author
 
-Built by **Felicia Rizka Putri**  
-Web Building
+Built by **Felicia Rizka Putri**
